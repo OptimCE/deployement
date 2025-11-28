@@ -1,0 +1,12 @@
+[submodule "user-frontend"]
+	path = user-frontend
+	url = git@github.com:OptimCE/user-frontend.git
+[submodule "member-frontend"]
+	path = member-frontend
+	url = git@github.com:OptimCE/member-frontend.git
+[submodule "community-frontend"]
+	path = community-frontend
+	url = git@github.com:OptimCE/community-frontend.git
+[submodule "document-frontend"]
+	path = document-frontend
+	url = git@github.com:OptimCE/document-frontend.git
