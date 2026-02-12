@@ -1,0 +1,6 @@
+[submodule "crm-backend"]
+	path = crm-backend
+	url = git@github.com:OptimCE/crm-backend.git
+[submodule "crm-frontend"]
+	path = crm-frontend
+	url = git@github.com:OptimCE/crm-frontend.git
