@@ -1,0 +1,122 @@
+services:
+  crm-frontend:
+    build:
+      context: crm-frontend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+    networks:
+      - reverse-proxy
+
+  crm-backend:
+    build:
+      context: crm-backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "80:80"
+    networks:
+      - api-gateway
+      - crm
+      - keycloak
+      - openfiles
+      - opentelemetry
+
+  crm-database:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      - POSTGRES_USER=${DB_USERNAME:-postgres}
+      - POSTGRES_DB=${DB_NAME:-crm_db}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - crm_db_data:/var/lib/postgresql/data
+    networks:
+      - crm
+
+
+  keycloak-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      - POSTGRES_USER=${KEYCLOAK_DB_USERNAME:-postgres}
+      - POSTGRES_DB=${KEYCLOAK_DB_NAME:-keycloak}
+      - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - keycloak
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    command: ["start-dev"]
+    ports:
+      - "8080:8080"
+    networks:
+      - keycloak
+      - reverse-proxy
+
+  openfiles:
+    image: totalplatform/openfiles:latest
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    ports:
+      - "8001:8001"
+    volumes:
+      - openfiles_data:/var/lib/openfiles
+    networks:
+      - openfiles
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    restart: unless-stopped
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - opentelemetry
+  krakend:
+    image: krakend:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./krakend:/etc/krakend
+    networks:
+      - api-gateway
+
+  reverse-proxy:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+    networks:
+      - reverse-proxy
+
+  letsencrypt:
+    image: certbot/certbot:latest
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+    command: certonly --webroot --webroot-path=/var/www/certbot --d yourdomain.com --email your-email@example.com
+
+networks:
+  reverse-proxy:
+  api-gateway:
+  crm:
+  keycloak:
+  openfiles:
+  opentelemetry:
