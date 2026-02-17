@@ -24,15 +24,17 @@ services:
       - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD}
     ports:
       - "5433:5432"
-    volumes:
-      - ./database_init/keycloak-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    # volumes:
+      # - ./database_init/keycloak-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - keycloak
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    build:
+      context: keycloak
+      dockerfile: Dockerfile
     restart: unless-stopped
-    command: ["start-dev", "--import-realm"]
+    command: ["start-dev", "--import-realm", "--verbose"]
     environment:
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
@@ -43,8 +45,10 @@ services:
       - KC_DB_PASSWORD=${KC_DB_PASSWORD}
       - KC_HOSTNAME=${KC_HOSTNAME:-localhost}
       - KC_HTTP_ENABLED=${KC_HTTP_ENABLED:-true}
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD:-admin}
     volumes:
-      - ./keycloak/realm-config.json:/opt/keycloak/data/import/realm-config.json
+      - ./keycloak/dev-config.json:/opt/keycloak/data/import/realm-config.json
     ports:
       - "8080:8080"
     networks:
@@ -104,6 +108,7 @@ services:
     build:
       context: crm-backend
       dockerfile: Dockerfile
+    restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=${PORT:-80}
