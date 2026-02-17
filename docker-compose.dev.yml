@@ -1,6 +1,4 @@
 services:
-
-
   crm-database:
     image: postgres:18-alpine
     restart: unless-stopped
@@ -83,7 +81,7 @@ services:
     ports:
       - "8090:8080"
     volumes:
-      - ./krakend:/etc/krakend
+      - ./krakend/config:/etc/krakend
     networks:
       - api-gateway
 
@@ -107,7 +105,8 @@ services:
   crm-backend:
     build:
       context: crm-backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
+    command: npm run dev
     restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV:-production}

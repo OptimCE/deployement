@@ -7,3 +7,6 @@
 [submodule "kc-groupid-mapper"]
 	path = keycloak/kc-groupid-mapper
 	url = git@github.com:OptimCE/kc-groupid-mapper.git
+[submodule "krakend"]
+	path = krakend/swagger2krakend
+	url = git@github.com:OptimCE/swagger2krakend.git
