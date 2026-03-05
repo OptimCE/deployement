@@ -1,3 +1,5 @@
+/!\ Ce repo est toujours sujet à de gros changement.
+
 # Déploiement CRM
 
 Ce projet contient la configuration Docker Compose pour déployer l'application CRM avec tous ses services.
