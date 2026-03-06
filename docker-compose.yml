@@ -174,24 +174,24 @@ services:
       - openfiles
       - opentelemetry
     depends_on:
-      - crm-database
-      - keycloak
-      - openfiles
-      - jaeger
+      crm-database:
+        condition: service_started
+      keycloak:
+        condition: service_started
+      openfiles:
+        condition: service_started
+      jaeger:
+        condition: service_started
 
   crm-frontend-config:
     profiles : ["init"]
-    image: alpine:latest
+    image: ghcr.io/ourouk/alpine-envsubst:main
     env_file:
       - .env.production
     volumes:
       - ./crm-frontend-config:/config
-    command:
-      - sh
-      - -c
-      - |
-        apk add --no-cache gettext
-        envsubst < /config/config.template.json > /config/config.json
+    command: 
+    - "< /config/config.template.json > /config/config.json"
 
   crm-frontend:
     profiles: ["frontend"]
