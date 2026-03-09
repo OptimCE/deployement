@@ -12,6 +12,12 @@ services:
       - ./crm-backend/database_script/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - crm
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h localhost || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   keycloak-db:
     profiles: ["backend"]
@@ -25,12 +31,17 @@ services:
       - keycloak_db_data:/var/lib/postgresql/data
     networks:
       - keycloak
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h localhost || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
   keycloak:
     profiles: ["backend"]
     # In production, you should build the image and push it to a registry.
     # Then use the `image` directive instead of `build`.
-    image: ghcr.io/optimce/kc-groupid-mapper
+    image: ghcr.io/optimce/kc-groupid-mapper:main
     restart: unless-stopped
     command: ["start", "--import-realm", "--verbose" ]
     environment:
@@ -46,14 +57,15 @@ services:
       - KC_HEALTH_ENABLED=true  # Explicitly enable health endpoints (if needed)
       - KC_METRICS_ENABLED=true  # Optional: Enable metrics if you want additional monitoring
     volumes:
-      - ./keycloak/prod-config.json:/opt/keycloak/data/import/realm-config.json
+      - ./keycloak/realm/prod-config.json:/opt/keycloak/data/import/realm-config.json
       - keycloak_data:/opt/keycloak/data
     networks:
       - keycloak
       - api-gateway
       - reverse-proxy
-    depends_on:
-      - keycloak-db
+    depends_on: 
+      keycloak-db:
+        condition: service_healthy
 
   # Sidecar container to check Keycloak health before starting dependent services
   keycloak-healthcheck:
@@ -191,7 +203,7 @@ services:
       - opentelemetry
     depends_on:
       crm-database:
-        condition: service_started
+        condition: service_healthy
       keycloak-healthcheck:
         condition: service_healthy
       openfiles:
@@ -206,12 +218,8 @@ services:
       - .env.production
     volumes:
       - ./crm-frontend-config:/config
-    command:
-      - sh
-      - -c
-      - |
-        apk add --no-cache gettext
-        envsubst < /config/config.template.json > /config/config.json
+    command: 
+    - "< /config/config.template.json > /config/config.json"
 
   crm-frontend:
     profiles: ["frontend"]
