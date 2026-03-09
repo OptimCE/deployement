@@ -30,9 +30,7 @@ services:
     profiles: ["backend"]
     # In production, you should build the image and push it to a registry.
     # Then use the `image` directive instead of `build`.
-    build:
-      context: keycloak
-      dockerfile: Dockerfile
+    image: ghcr.io/optimce/kc-groupid-mapper
     restart: unless-stopped
     command: ["start", "--import-realm", "--verbose" ]
     environment:
@@ -208,8 +206,12 @@ services:
       - .env.production
     volumes:
       - ./crm-frontend-config:/config
-    command: 
-    - "< /config/config.template.json > /config/config.json"
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache gettext
+        envsubst < /config/config.template.json > /config/config.json
 
   crm-frontend:
     profiles: ["frontend"]
