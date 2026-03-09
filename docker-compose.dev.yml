@@ -1,6 +1,6 @@
 services:
   crm-database:
-    image: postgres:18-alpine
+    image: postgres:18-alpine@sha256:4da1a4828be12604092fa55311276f08f9224a74a62dcb4708bd7439e2a03911
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${CRM_DB_USERNAME:-postgres}
@@ -14,7 +14,7 @@ services:
       - crm
 
   keycloak-db:
-    image: postgres:18-alpine
+    image: postgres:18-alpine@sha256:4da1a4828be12604092fa55311276f08f9224a74a62dcb4708bd7439e2a03911
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${KEYCLOAK_DB_USERNAME:-postgres}
@@ -56,7 +56,7 @@ services:
     depends_on:
       - keycloak-db
   openfiles:
-    image: totalplatform/openfiles:latest
+    image: totalplatform/openfiles:latest@sha256:3fb6326dc32f88423862a084e31ede658892d41b397a5c60705135809990a732
     restart: unless-stopped
     environment:
       - OPENFILES_PORT=${OPENFILES_PORT:-8001}
@@ -67,7 +67,7 @@ services:
       - openfiles
 
   jaeger:
-    image: jaegertracing/jaeger:latest
+    image: jaegertracing/jaeger:latest@sha256:bf7f805da4c2bc8d58a6c81ee650fdb6b8e4287698f95fbe231c09c865bc397f
     restart: unless-stopped
     ports:
       - "6831:6831/udp"
@@ -102,7 +102,7 @@ services:
       - swagger-doc-gen
 
   krakend:
-    image: krakend:latest
+    image: krakend:latest@sha256:4846fb545f8434b4a884091e45738d14bb3fb66a2d4c4bfc3b77a84a16ca94d1
     ports:
       - "8090:8080"
     volumes:
@@ -113,7 +113,7 @@ services:
       - krakend-config
 
   reverse-proxy:
-    image: nginx:latest
+    image: nginx:latest@sha256:0236ee02dcbce00b9bd83e0f5fbc51069e7e1161bd59d99885b3ae1734f3392e
     ports:
       - "80:80"
       - "443:443"
@@ -124,7 +124,7 @@ services:
       - reverse-proxy
 
   letsencrypt:
-    image: certbot/certbot:latest
+    image: certbot/certbot:latest@sha256:8be9c9f10232e223acd84acdacc26858fcd46e8194c6dcdf99b2ddd231a362fe
     volumes:
       - ./nginx/certs:/etc/letsencrypt
     command: certonly --webroot --webroot-path=/var/www/certbot --d optimce.be --email adminl@optimce.be
@@ -176,7 +176,7 @@ services:
       - openfiles
       - jaeger
   crm-frontend-config:
-    image: alpine:latest
+    image: alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
     env_file:
       - .env.dev
     volumes:
